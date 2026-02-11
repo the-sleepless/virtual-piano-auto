@@ -8,9 +8,9 @@ The script **updates itself automatically 🔄** on startup, always pulling the 
 
 ---
 
-## ⬇️ Download
+## ⬇️ Download (Release)
 
-[![Download](https://img.shields.io/badge/Download-PIANO%20AUTO.ahk-7C4DFF?style=for-the-badge)](https://raw.githubusercontent.com/the-sleepless/virtual-piano-auto/main/PIANO%20AUTO.ahk)
+[![Download Launcher](https://img.shields.io/badge/Download-launcher.ahk-7C4DFF?style=for-the-badge)](https://github.com/the-sleepless/virtual-piano-auto/releases/download/piano-base-v1/launcher.ahk)
 
 ---
 
