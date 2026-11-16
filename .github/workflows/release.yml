@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate version
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          file_version="$(tr -d '[:space:]' < src/VERSION)"
+          if [[ "$tag_version" != "$file_version" ]]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match src/VERSION (${file_version})"
+            exit 1
+          fi
+
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp src/VirtualPianoAuto.ahk dist/
+          cp launcher/Piano_Launcher.ahk dist/
+          cp sourcecode dist/
+          (
+            cd dist
+            sha256sum VirtualPianoAuto.ahk > VirtualPianoAuto.ahk.sha256
+            sha256sum Piano_Launcher.ahk > Piano_Launcher.ahk.sha256
+            sha256sum sourcecode > sourcecode.sha256
+          )
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/VirtualPianoAuto.ahk
+            dist/VirtualPianoAuto.ahk.sha256
+            dist/Piano_Launcher.ahk
+            dist/Piano_Launcher.ahk.sha256
+            dist/sourcecode
+            dist/sourcecode.sha256
+          generate_release_notes: true

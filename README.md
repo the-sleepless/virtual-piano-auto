@@ -23,13 +23,16 @@ The script features a flicker-free UI, real-time tempo controls, a token-based p
 
 </div>
 
-The launcher downloads the latest `sourcecode` from `main` every time you run it, so you always get the newest version automatically.
+The launcher checks the **latest GitHub Release** every time you run it, downloads the newest build, verifies its **SHA-256** checksum, caches it under `%LocalAppData%\VirtualPianoAuto` and runs it. Offline, it falls back to the cached copy. You always get the newest tagged release - never unreleased code from `main`.
 
-You can also run `sourcecode` directly: open it with AutoHotkey v2 and it works the same (you just don't get auto-updates).
+You can also download `VirtualPianoAuto.ahk` from the [latest release](https://github.com/the-sleepless/virtual-piano-auto/releases/latest) and run it directly.
 
-> **Why is the file called `sourcecode` (no extension)?**
-> The launcher downloads `https://raw.githubusercontent.com/the-sleepless/virtual-piano-auto/main/sourcecode`.
-> Keeping a single, self-contained file at that exact path is what makes the auto-update flow work. If the path ever changes, the launcher must be updated first.
+<details>
+<summary>Legacy note for launchers from before v2.0.0</summary>
+
+Old launchers (v0.0.1) downloaded the raw `main/sourcecode` file. That file now contains a tiny compatibility shim that fetches the latest release - upgrading works transparently.
+
+</details>
 
 ---
 
@@ -81,7 +84,7 @@ The wheel hotkeys are ignored while **Bloquear Vel.** (speed lock) is checked in
 
 ## 🛠️ How it works
 
-`sourcecode` is intentionally one file. At its core:
+`src/VirtualPianoAuto.ahk` is intentionally one file. At its core:
 
 - **`Engine`** — parses the sheet into tokens (`wait` / `key` / `chord`), expands shifted keys, sends input via `SendInput`, and drives a 10 ms timer. Consecutive waits are merged, chords are released on a fixed STEP grid (no tempo drift), and a `downKeys` map guarantees no key is ever left held — even on crash or exit.
 - **`PianoUI`** — a dark, `AlwaysOnTop` GUI with a non-editable-look edit field, sliders and an immersive dark title bar (Windows 10 1809+; harmlessly ignored elsewhere).
@@ -89,22 +92,32 @@ The wheel hotkeys are ignored while **Bloquear Vel.** (speed lock) is checked in
 
 ---
 
-## 🚀 Development
+## 📦 Repository layout
 
-There is no automated test suite (playback can only be verified on Windows with a real piano target), so changes must be reviewed extra carefully:
-
-```bash
-# Syntax check (requires AutoHotkey v2)
-AutoHotkey.exe /iLib sourcecode   # or just open it
+```
+src/VirtualPianoAuto.ahk     the application (single self-contained file)
+src/VERSION                  application version (semver)
+launcher/Piano_Launcher.ahk  bootstrapper/updater (downloads latest release)
+sourcecode                   legacy shim kept for pre-2.0 launchers
+tests/smoke.sh               Linux-friendly sanity checks
+.github/workflows/           CI (smoke tests) and release automation
 ```
 
-Project layout is deliberately minimal:
+---
 
-- `sourcecode` — the whole script (required by the launcher's raw URL).
-- `README.md` — this file.
-- `LICENSE` — personal use only.
+## 🚀 Development
 
-Releases are tagged from this repository (`piano-launcher-vX.Y.Z` tags carry the launcher). The main script is consumed directly from `main`, so there is no version skew between launcher and script.
+Playback can only be verified on Windows with a real piano target, but the repository ships a sanity suite that runs on Linux/macOS:
+
+```bash
+bash tests/smoke.sh
+```
+
+CI runs it on every push and PR. See [CONTRIBUTING.md](CONTRIBUTING.md) for the manual test checklist and release process.
+
+## 🏷️ Releases
+
+Releases are cut from tags matching `src/VERSION` (`git tag v2.0.0 && git push origin v2.0.0`). The release workflow validates the tag, packages the app, the launcher and the shim with SHA-256 checksums, and publishes a GitHub Release. The launcher consumes releases only — pushing to `main` never ships code to users.
 
 ---
 
@@ -118,4 +131,4 @@ Personal use only. See [LICENSE](LICENSE).
 [repo-latest]: https://github.com/the-sleepless/virtual-piano-auto/releases/latest
 
 [shield-download-launcher]: https://img.shields.io/badge/Download-launcher.ahk-7C4DFF?style=for-the-badge
-[download-launcher]: https://github.com/the-sleepless/virtual-piano-auto/releases/download/piano-launcher-v1.0.0/Piano_Launcher.ahk
+[download-launcher]: https://github.com/the-sleepless/virtual-piano-auto/releases/latest/download/Piano_Launcher.ahk
